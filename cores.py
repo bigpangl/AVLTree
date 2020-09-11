@@ -9,34 +9,10 @@ Python:     python3.6
 
 import abc
 import logging
+
 from typing import List
 
 
-class NotSameInstanceException(Exception):
-    def __init__(self, *args):
-        self.args = args
-
-
-class CustomDict(abc.ABC):
-    """
-
-    """
-
-    @abc.abstractmethod
-    def __getitem__(self, item):
-        pass
-
-    @abc.abstractmethod
-    def __delitem__(self, key):
-        pass
-
-    @abc.abstractmethod
-    def keys(self):
-        pass
-
-    @abc.abstractmethod
-    def __setitem__(self, key, value):
-        pass
 
 
 class Data(object):
@@ -241,7 +217,7 @@ class AVLNode(BaseNode):
         return f"Node: [data:{self.Data},depth:{self.Depth},balance:{self.Balance}]"
 
 
-class AVLTree(CustomDict):
+class AVLTree(object):
     def __init__(self):
         self.head: AVLNode = None
         super(AVLTree, self).__init__()
@@ -303,7 +279,7 @@ class AVLTree(CustomDict):
                 if left_node:
                     left_node.Parent = parent
             else:
-                logging.warning(f"删除:{node}")
+                logging.debug(f"删除:{node}")
                 self.head = left_node
                 if self.head:
                     self.head.Parent = None
