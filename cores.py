@@ -13,19 +13,17 @@ import logging
 from typing import List
 
 
-
-
-class Data(object):
+class KeyValue(object):
     """
     打包键值对,允许根据key 做比较判断
     """
 
     def __init__(self, key, value):
-        self.key = key
-        self.value = value
+        self.Key = key
+        self.Value = value
 
     def __str__(self):
-        return f"{self.key}"
+        return f"{self.Key}:{self.Value}"
 
     # 比较相关
     def __eq__(self, other):
@@ -34,10 +32,10 @@ class Data(object):
         :param other:
         :return:
         """
-        if isinstance(other, Data):
-            return self.key == other.key
+        if isinstance(other, KeyValue):
+            return self.Key == other.Key
         else:
-            return self.key == other
+            return self.Key == other
 
     def __ne__(self, other):
         """
@@ -46,10 +44,10 @@ class Data(object):
         :return:
         """
 
-        if isinstance(other, Data):
-            return self.key != other.key
+        if isinstance(other, KeyValue):
+            return self.Key != other.Key
         else:
-            return self.key != other
+            return self.Key != other
 
     def __lt__(self, other):
         """
@@ -58,30 +56,30 @@ class Data(object):
         :return:
         """
 
-        if isinstance(other, Data):
-            return self.key < other.key
+        if isinstance(other, KeyValue):
+            return self.Key < other.Key
         else:
-            return self.key < other
+            return self.Key < other
 
     def __gt__(self, other):
 
-        if isinstance(other, Data):
-            return self.key > other.key
+        if isinstance(other, KeyValue):
+            return self.Key > other.Key
         else:
-            return self.key > other
+            return self.Key > other
 
     def __le__(self, other):
-        if isinstance(other, Data):
-            return self.key <= other.key
+        if isinstance(other, KeyValue):
+            return self.Key <= other.Key
         else:
-            return self.key <= other
+            return self.Key <= other
 
     def __ge__(self, other):
 
-        if isinstance(other, Data):
-            return self.key >= other.key
+        if isinstance(other, KeyValue):
+            return self.Key >= other.Key
         else:
-            return self.key >= other
+            return self.Key >= other
 
 
 class BaseNode(object):
@@ -92,33 +90,9 @@ class BaseNode(object):
     """
 
     def __init__(self, data):
-        self.data = data
-        self.left: BaseNode = None
-        self.right: BaseNode = None
-
-    @property
-    def Data(self):
-        return self.data
-
-    @Data.setter
-    def Data(self, value):
-        self.data = value
-
-    @property
-    def Left(self) -> "BaseNode":
-        return self.left
-
-    @Left.setter
-    def Left(self, value):
-        self.left = value
-
-    @property
-    def Right(self):
-        return self.right
-
-    @Right.setter
-    def Right(self, value):
-        self.right = value
+        self.Data = data
+        self.Left: BaseNode = None
+        self.Right: BaseNode = None
 
     # 比较相关
     def __eq__(self, other):
@@ -128,9 +102,9 @@ class BaseNode(object):
         :return:
         """
         if isinstance(other, BaseNode):
-            return self.data == other.data
+            return self.Data == other.Data
         else:
-            return self.data == other
+            return self.Data == other
 
     def __ne__(self, other):
         """
@@ -153,28 +127,50 @@ class BaseNode(object):
         if isinstance(other, BaseNode):
             return self.data < other.data
         else:
-            return self.data < other
+            return self.Data < other
 
     def __gt__(self, other):
         if isinstance(other, BaseNode):
-            return self.data > other.data
+            return self.Data > other.Data
         else:
-            return self.data > other
+            return self.Data > other
 
     def __le__(self, other):
         if isinstance(other, BaseNode):
-            return self.data <= other.data
+            return self.Data <= other.Data
         else:
-            return self.data <= other
+            return self.Data <= other
 
     def __ge__(self, other):
         if isinstance(other, BaseNode):
-            return self.data >= other.data
+            return self.Data >= other.Data
         else:
-            return self.data >= other
+            return self.Data >= other
 
     def __str__(self):
         return f"key:{self.Data.key},value:{self.Data.value}"
+
+
+def mid_sort(node: BaseNode):
+    """
+    中序遍历，生成器
+    :param node:
+    :return:
+    """
+
+    if node is not None:  # 中序遍历输出数据
+        stack_cache = [node]
+        while stack_cache:
+            while stack_cache[-1].Left is not None:
+                stack_cache.append(stack_cache[-1].Left)
+            while stack_cache:
+                node = stack_cache.pop()
+                yield node
+                if node.Right is not None:
+                    stack_cache.append(node.Right)
+                    break
+    else:
+        logging.warning(f"无法遍历一个空树:{node}")
 
 
 class AVLNode(BaseNode):
@@ -231,9 +227,9 @@ class AVLTree(object):
                 break
             else:
                 if key < node_now:
-                    node_now = node_now.left
+                    node_now = node_now.Left
                 else:
-                    node_now = node_now.right
+                    node_now = node_now.Right
 
         return node_back
 
@@ -242,12 +238,12 @@ class AVLTree(object):
         value = None
         node: AVLNode = self._get_node(item)
         if node:
-            data: Data = node.Data
-            value = data.value
+            data: KeyValue = node.Data
+            value = data.Value
         return value
 
     def __setitem__(self, key, value):
-        key_value = Data(key, value)
+        key_value = KeyValue(key, value)
         self._insert(key_value)
         # 以上仅实现了添加,但是没有平衡判断旋转判断
 
@@ -267,12 +263,12 @@ class AVLTree(object):
                     stack_left_min = stack_left_min.Left
                 stack_left_min.Left = right_node
                 if right_node:
-                    right_node.Parent = stack_left_min # 建立两者之间关系
+                    right_node.Parent = stack_left_min  # 建立两者之间关系
             else:
                 left_node = right_node
 
             if parent:
-                if parent.Right==node:
+                if parent.Right == node:
                     parent.Right = left_node
                 else:
                     parent.Left = left_node
@@ -309,7 +305,7 @@ class AVLTree(object):
                     node = stack_cache.pop()
                     logging.debug(f"value:{node.Data},left:{node.Left},right:{node.Right}")
                     yield node
-                    if node.right is not None:
+                    if node.Right is not None:
                         stack_cache.append(node.Right)
                         break
 
@@ -320,8 +316,8 @@ class AVLTree(object):
         """
         for node in self.mid_sort():
             node: AVLNode
-            data: Data = node.Data
-            yield data.key
+            data: KeyValue = node.Data
+            yield data.Key
 
     def __str__(self):
         """
@@ -356,12 +352,12 @@ class AVLTree(object):
                     else:
                         node_now = node_now.left  # 递归去寻找
                 elif key_value > node_now.Data:
-                    if node_now.right is None:
-                        node_now.right = node_insert
+                    if node_now.Right is None:
+                        node_now.Right = node_insert
                         node_insert.Parent = node_now
                         break
                     else:
-                        node_now = node_now.right
+                        node_now = node_now.Right
                 else:
                     node_now.Data = key_value  # 覆盖值但是不覆盖这个节点对象
                     break
